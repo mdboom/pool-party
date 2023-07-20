@@ -1,0 +1,32 @@
+{
+    "interp": {
+        "gilknocker": 0.005349850747734308,
+        "wall_clock": 7.38,
+        "cpu": 1431,
+        "vmpeak": 1728340
+    },
+    "interp2": {
+        "gilknocker": 0.005544689483940601,
+        "wall_clock": 7.05,
+        "cpu": 1453,
+        "vmpeak": 1728200
+    },
+    "thread": {
+        "gilknocker": 0.9889969825744629,
+        "wall_clock": 41.1,
+        "cpu": 100,
+        "vmpeak": 1596552
+    },
+    "sequential": {
+        "gilknocker": 0.8182685971260071,
+        "wall_clock": 44.3,
+        "cpu": 99,
+        "vmpeak": 195332
+    },
+    "process": {
+        "gilknocker": 0.01149349007755518,
+        "wall_clock": 6.47,
+        "cpu": 1526,
+        "vmpeak": 3036376
+    }
+}
