@@ -42,4 +42,4 @@ axs[0, 0].legend()
 
 plt.suptitle("Running 16 workers on 8 core / 16 virtual core machine")
 
-plt.show()
+plt.savefig("results.png")
