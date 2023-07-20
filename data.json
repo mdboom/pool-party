@@ -1,32 +1,38 @@
 {
-    "interp": {
-        "gilknocker": 0.005349850747734308,
-        "wall_clock": 7.38,
-        "cpu": 1431,
-        "vmpeak": 1728340
-    },
-    "interp2": {
-        "gilknocker": 0.005544689483940601,
-        "wall_clock": 7.05,
-        "cpu": 1453,
-        "vmpeak": 1728200
-    },
-    "thread": {
-        "gilknocker": 0.9889969825744629,
-        "wall_clock": 41.1,
-        "cpu": 100,
-        "vmpeak": 1596552
-    },
-    "sequential": {
-        "gilknocker": 0.8182685971260071,
-        "wall_clock": 44.3,
-        "cpu": 99,
-        "vmpeak": 195332
-    },
-    "process": {
-        "gilknocker": 0.01149349007755518,
-        "wall_clock": 6.47,
-        "cpu": 1526,
-        "vmpeak": 3036376
-    }
+  "interp": {
+    "gilknocker": 0.009481999091804028,
+    "wall_clock": 7.01,
+    "cpu": 1412,
+    "vmpeak": 1728348
+  },
+  "interp2": {
+    "gilknocker": 0.010440511628985405,
+    "wall_clock": 6.86,
+    "cpu": 1480,
+    "vmpeak": 1728204
+  },
+  "interp3": {
+    "gilknocker": 0.013472474180161953,
+    "wall_clock": 7.02,
+    "cpu": 1461,
+    "vmpeak": 1728204
+  },
+  "thread": {
+    "gilknocker": 0.9841063618659973,
+    "wall_clock": 42.18,
+    "cpu": 100,
+    "vmpeak": 1596556
+  },
+  "sequential": {
+    "gilknocker": 0.8180463910102844,
+    "wall_clock": 43.14,
+    "cpu": 99,
+    "vmpeak": 195416
+  },
+  "process": {
+    "gilknocker": 0.01242857426404953,
+    "wall_clock": 6.38,
+    "cpu": 1541,
+    "vmpeak": 3036444
+  }
 }

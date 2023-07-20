@@ -6,12 +6,18 @@ pip = [py, "-m", "pip"]
 
 shutil.rmtree("venv")
 subprocess.check_call(["../cpython/python", "-m", "venv", "venv"])
-subprocess.check_call(pip + ["install", "../extrainterpreters"])
+subprocess.check_call(
+    pip
+    + [
+        "install",
+        "git+https://github.com/mdboom/extrainterpreters@main#egg-info=extrainterpreters",
+    ]
+)
 subprocess.check_call(pip + ["install", "gilknocker"])
 
 data = {}
 
-for mode in ["interp", "interp2", "thread", "sequential", "process"]:
+for mode in ["interp", "interp2", "interp3", "thread", "sequential", "process"]:
     print(f"{mode=}")
 
     output = subprocess.run(
@@ -49,7 +55,7 @@ for mode in ["interp", "interp2", "thread", "sequential", "process"]:
             case _:
                 continue
 
-        data[mode][key.decode('utf-8')] = val
+        data[mode][key.decode("utf-8")] = val
 
     print(data[mode])
 

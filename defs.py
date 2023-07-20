@@ -113,4 +113,4 @@ def bench_nbody(loops, reference=DEFAULT_REFERENCE, iterations=DEFAULT_ITERATION
         advance(0.01, iterations)
         result.append(report_energy())
 
-    return result
+    return result * 10

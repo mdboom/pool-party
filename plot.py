@@ -32,8 +32,8 @@ plot(axs[0, 0], "gilknocker", "% GIL contention", lambda x: x * 100)
 plot(
     axs[0, 1],
     "wall_clock",
-    "time (vs. sequential)",
-    lambda x: x / data["sequential"]["wall_clock"],
+    "speedup (vs. sequential)",
+    lambda x: data["sequential"]["wall_clock"] / x,
 )
 plot(axs[1, 0], "cpu", "% CPU util / all cores", lambda x: (x / 1600) * 100)
 plot(axs[1, 1], "vmpeak", "peak mem, all processes (mb)", lambda x: x / 1024)

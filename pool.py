@@ -1,5 +1,9 @@
 try:
-    from multiprocessing.pool import SubinterpreterPool, SubinterpreterPool2
+    from multiprocessing.pool import (
+        SubinterpreterPool,
+        SubinterpreterPool2,
+        SubinterpreterPool3,
+    )
 except ImportError:
     pass
 from multiprocessing.pool import ThreadPool
@@ -25,6 +29,8 @@ if __name__ == "__main__":
             Pool = SubinterpreterPool
         case "interp2":
             Pool = SubinterpreterPool2
+        case "interp3":
+            Pool = SubinterpreterPool3
         case "thread":
             Pool = ThreadPool
         case "subprocess":
@@ -43,7 +49,7 @@ if __name__ == "__main__":
             result = list(p.map(defs.bench_nbody, [10] * 64))
 
     assert len(result) == 64
-    assert all(len(x) == 10 for x in result)
+    assert all(len(x) == 100 for x in result)
 
     if gilknocker is not None:
         knocker.stop()
