@@ -1,3 +1,5 @@
+import argparse
+import json
 import shutil
 import subprocess
 
@@ -17,8 +19,22 @@ subprocess.check_call(pip + ["install", "gilknocker"])
 
 data = {}
 
-for mode in ["interp", "interp2", "interp3", "thread", "sequential", "process"]:
+parser = argparse.ArgumentParser(
+    description="Benchmark multiprocessing pools in various modes"
+)
+parser.add_argument(
+    "benchmark", type=str, nargs='?', help="The benchmark to run", default="nbody"
+)
+args = parser.parse_args()
+benchmark = args.benchmark
+
+
+for mode in ["interp", "interp2", "interp3", "thread", "sequential", "subprocess"]:
     print(f"{mode=}")
+
+    if benchmark in ("data_pass", "balance") and mode == "interp3":
+        print(f"Skipping: {benchmark} doesn't work with interp3")
+        continue
 
     output = subprocess.run(
         [
@@ -29,6 +45,7 @@ for mode in ["interp", "interp2", "interp3", "thread", "sequential", "process"]:
             py,
             "pool.py",
             mode,
+            benchmark
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -57,6 +74,4 @@ for mode in ["interp", "interp2", "interp3", "thread", "sequential", "process"]:
 
         data[mode][key.decode("utf-8")] = val
 
-    print(data[mode])
-
-print(data)
+json.dump(data, open(f"{benchmark}.json", "w"))

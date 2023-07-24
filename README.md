@@ -5,7 +5,7 @@ per-interpreter GIL support in Python 3.12.
 
 ## Results
 
-![Results](results.png)
+![Results](nbody.png)
 
 Results of running the nbody benchmark using all 16 virtual cores on an 8 core
 system. **The choice of benchmark here probably has a considerable impact on the

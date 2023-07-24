@@ -1,8 +1,11 @@
+import json
+import sys
+
 from matplotlib import pyplot as plt
 
-import json
+benchmark = sys.argv[-1]
 
-data = json.load(open("data.json"))
+data = json.load(open(f"{benchmark}.json"))
 
 fig, axs = plt.subplots(2, 2, layout="constrained")
 
@@ -42,4 +45,4 @@ axs[0, 0].legend()
 
 plt.suptitle("Running 16 workers on 8 core / 16 virtual core machine")
 
-plt.savefig("results.png")
+plt.savefig(f"{benchmark}.png")
