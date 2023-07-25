@@ -1,3 +1,5 @@
+import sys
+
 try:
     from multiprocessing.pool import (
         SubinterpreterPool,
@@ -9,10 +11,12 @@ except ImportError:
 from multiprocessing.pool import ThreadPool
 from multiprocessing import Pool
 
+gilknocker = None
 try:
-    import gilknocker
+    if 'nogil' not in sys.version:
+        import gilknocker
 except ImportError:
-    gilknocker = None
+    pass
 
 import argparse
 import sys
@@ -83,3 +87,5 @@ if __name__ == "__main__":
     if gilknocker is not None:
         knocker.stop()
         print(f"gilknocker: {knocker.contention_metric}")
+    elif "nogil" in sys.version:
+        print(f"gilknocker: 0")

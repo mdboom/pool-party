@@ -12,6 +12,11 @@ system. **The choice of benchmark here probably has a considerable impact on the
 results. Don't take any of this as definitive. More benchmarks with different
 characteristics will need to be tested.**
 
+![Results](data_pass.png)
+
+Results of running a benchmark to measure message-passing overhead. Sends 0.5 MB
+of data with each task, but the task does virtually nothing.
+
 ## Methods
 
 At the core of multiprocessing is a "work handler loop", which receives tasks (a
@@ -28,8 +33,8 @@ In both cases, subinterpreters are managed using
 
 ### Method one
 
-As with regular `multiprocessing` using subprocesses, each worker in the pool has its own thread in the main interpreter.  
-Inside each of those threads, a subinterpreter runs multiprocessing's existing "work handler loop", unmodified.  
+As with regular `multiprocessing` using subprocesses, each worker in the pool has its own thread in the main interpreter.
+Inside each of those threads, a subinterpreter runs multiprocessing's existing "work handler loop", unmodified.
 
 Since a `queue.SimpleQueue` can not be used to send objects between
 subinterpreters, work is sent to this loop inside the subinterpreter using a
@@ -94,6 +99,12 @@ This method is identical to method two, except the return value from the
 subinterpreter is sent over a pipe back to the worker thread in the main
 interpreter. This does not require the extension to PEP554 to run code in eval
 mode.
+
+### A note about nogil
+
+The `nogil` mode runs on the `colesbury/nogil-3.12` fork of CPython (hash 4526c07).
+That commit segfaults when running the nbody benchmark, so I disabled specialization to get it to run.
+To account for this variable, I also disabled specialization on upstream CPython.
 
 ## Running this
 

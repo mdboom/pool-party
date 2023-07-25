@@ -1,3 +1,5 @@
+import copy
+
 DEFAULT_ITERATIONS = 20000
 DEFAULT_REFERENCE = "sun"
 
@@ -105,16 +107,20 @@ def offset_momentum(ref, bodies=SYSTEM, px=0.0, py=0.0, pz=0.0):
 
 
 def bench_nbody(loops, reference=DEFAULT_REFERENCE, iterations=DEFAULT_ITERATIONS):
+    bodies = copy.deepcopy(BODIES)
+    system = copy.deepcopy(SYSTEM)
+    pairs = copy.deepcopy(PAIRS)
+
     # Set up global state
-    offset_momentum(BODIES[reference])
+    offset_momentum(bodies[reference], system)
 
     range_it = range(loops)
 
     result = []
 
-    for _ in range_it:
-        advance(0.01, iterations)
-        result.append(report_energy())
+    for x in range_it:
+        advance(0.01, iterations, system, pairs)
+        result.append(report_energy(system, pairs))
 
     return result
 

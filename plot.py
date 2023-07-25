@@ -27,6 +27,8 @@ def barchart(ax, name, dataset):
 def plot(ax, metric, scale, f):
     dataset = rotate_data(data, metric, f)
     barchart(ax, metric, dataset)
+    if metric == "wall_clock":
+        metric = "speedup"
     ax.set_title(metric)
     ax.set_ylabel(scale)
 

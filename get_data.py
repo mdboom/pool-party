@@ -4,18 +4,24 @@ import shutil
 import subprocess
 
 py = "venv/bin/python"
+nogil_py = "venv-nogil/bin/python"
 pip = [py, "-m", "pip"]
 
 shutil.rmtree("venv")
 subprocess.check_call(["../cpython/python", "-m", "venv", "venv"])
+shutil.rmtree("venv-nogil", ignore_errors=True)
+subprocess.check_call(["../cpython-nogil/python", "-m", "venv", "venv-nogil"])
 subprocess.check_call(
-    pip
-    + [
+    [
+        py,
+        "-m",
+        "pip",
         "install",
         "git+https://github.com/mdboom/extrainterpreters@main#egg-info=extrainterpreters",
     ]
 )
-subprocess.check_call(pip + ["install", "gilknocker"])
+for p in [py, nogil_py]:
+    subprocess.check_call([p, "-m", "pip", "install", "gilknocker"])
 
 data = {}
 
@@ -23,18 +29,25 @@ parser = argparse.ArgumentParser(
     description="Benchmark multiprocessing pools in various modes"
 )
 parser.add_argument(
-    "benchmark", type=str, nargs='?', help="The benchmark to run", default="nbody"
+    "benchmark", type=str, nargs="?", help="The benchmark to run", default="nbody"
 )
 args = parser.parse_args()
 benchmark = args.benchmark
 
 
-for mode in ["interp", "interp2", "interp3", "thread", "sequential", "subprocess"]:
+for mode in ["interp", "interp2", "interp3", "thread", "nogil", "sequential", "subprocess"]:
     print(f"{mode=}")
 
     if benchmark in ("data_pass", "balance") and mode == "interp3":
         print(f"Skipping: {benchmark} doesn't work with interp3")
         continue
+
+    if mode == "nogil":
+        python_exec = nogil_py
+        real_mode = "thread"
+    else:
+        python_exec = py
+        real_mode = mode
 
     output = subprocess.run(
         [
@@ -42,10 +55,10 @@ for mode in ["interp", "interp2", "interp3", "thread", "sequential", "subprocess
             "/usr/bin/time",
             "-f",
             "'wall_clock: %e\ncpu: %P\n'",
-            py,
+            python_exec,
             "pool.py",
-            mode,
-            benchmark
+            real_mode,
+            benchmark,
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
