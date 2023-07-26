@@ -1,0 +1,56 @@
+{
+  "sequential": {
+    "gilknocker": 0.8199563026428223,
+    "wall_clock": 72.71,
+    "cpu": 92,
+    "vmpeak": 192312
+  },
+  "interp": {
+    "gilknocker": 0.10578861087560654,
+    "wall_clock": 14.16,
+    "cpu": 1371,
+    "vmpeak": 1724932
+  },
+  "interp2": {
+    "gilknocker": 0.003879294963553548,
+    "wall_clock": 14.2,
+    "cpu": 1420,
+    "vmpeak": 1724768
+  },
+  "thread": {
+    "gilknocker": 0.9815685153007507,
+    "wall_clock": 71.97,
+    "cpu": 93,
+    "vmpeak": 1593120
+  },
+  "futures": {
+    "gilknocker": 0.9854843616485596,
+    "wall_clock": 75.1,
+    "cpu": 93,
+    "vmpeak": 1371868
+  },
+  "nogil-sequential": {
+    "gilknocker": 0.0,
+    "wall_clock": 76.07,
+    "cpu": 92,
+    "vmpeak": 72512
+  },
+  "nogil-thread": {
+    "gilknocker": 0.0,
+    "wall_clock": 12.77,
+    "cpu": 1441,
+    "vmpeak": 2096760
+  },
+  "nogil-futures": {
+    "gilknocker": 0.0,
+    "wall_clock": 12.64,
+    "cpu": 1390,
+    "vmpeak": 1777156
+  },
+  "subprocess": {
+    "gilknocker": 0.008461966179311275,
+    "wall_clock": 14.19,
+    "cpu": 1412,
+    "vmpeak": 3037300
+  }
+}

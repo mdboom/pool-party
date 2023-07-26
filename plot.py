@@ -31,6 +31,7 @@ def plot(ax, metric, scale, f):
         metric = "speedup"
     ax.set_title(metric)
     ax.set_ylabel(scale)
+    ax.set_xticks([])
 
 
 plot(axs[0, 0], "gilknocker", "% GIL contention", lambda x: x * 100)
@@ -43,8 +44,8 @@ plot(
 plot(axs[1, 0], "cpu", "% CPU util / all cores", lambda x: (x / 1600) * 100)
 plot(axs[1, 1], "vmpeak", "peak mem, all processes (mb)", lambda x: x / 1024)
 
-axs[0, 0].legend()
+axs[0, 1].legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
 
-plt.suptitle("Running 16 workers on 8 core / 16 virtual core machine")
+plt.suptitle(f"{benchmark} benchmark (16 cores)")
 
 plt.savefig(f"{benchmark}.png")

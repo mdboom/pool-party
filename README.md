@@ -1,40 +1,73 @@
 # Pool party 🏊
 
 Experiments with building a `multiprocessing.pool.SubinterpreterPool` out of the
-per-interpreter GIL support in Python 3.12.
+per-interpreter GIL support in Python 3.12. Also comparing to alternative
+approaches, including `multiprocessing.ThreadPool`, `multiprocessing.Pool`,
+`concurrent.futures.ThreadPoolExecutor`, with and without `nogil`.
 
-## Results
+## Benchmarks
+
+### fib
+
+Calculates fibonacci.  Taken directly from the [nogil README](https://github.com/colesbury/nogil#example).
+
+![Results](fib.png)
+
+### nbody
+
+The `nbody` benchmark from pyperformance.
 
 ![Results](nbody.png)
 
-Results of running the nbody benchmark using all 16 virtual cores on an 8 core
-system. **The choice of benchmark here probably has a considerable impact on the
-results. Don't take any of this as definitive. More benchmarks with different
-characteristics will need to be tested.**
+### raytrace
+
+The `raytrace` benchmark from pyperformance.
+
+![Results](raytrace.png)
+
+### data_pass
+
+A do-nothing benchmark that passes 0.5 MB of data to measure the overhead of message passing.
 
 ![Results](data_pass.png)
 
-Results of running a benchmark to measure message-passing overhead. Sends 0.5 MB
-of data with each task, but the task does virtually nothing.
+## Metrics
+
+### gilknocker
+
+Uses the [gilknocker](https://pypi.org/project/gilknocker/) library, which
+reports the percentage of samples in which the GIL was held. A rough measure of
+"GIL contention".
+
+This library doesn't work with the `nogil` branch, so we report 0 there. This
+doesn't mean there isn't lock contention over shared data structures, however,
+we just don't have a good way to measure that at the moment.
+
+### speedup
+
+The speedup vs. the naive sequential approach.
+
+### cpu
+
+Percentage utilization across all cores of the machine.
+
+### vmpeak
+
+Peak memory usage.  For subprocessing, includes the memory of all child processes.
 
 ## Methods
 
-At the core of multiprocessing is a "work handler loop", which receives tasks (a
-function and some arguments) from an input queue, and then puts the result in an
-output queue.
+### sequential
 
-There are currently two and a half different methods for running this work
-handler loop with subinterpreters, all of which have very similar performance in terms
-of runtime and memory.
+Run the work purely sequentially, using `map`.
 
-In both cases, subinterpreters are managed using
-`Lib/test/support/interpreters.py` which is an experimental implementation of
-[PEP 554](https://peps.python.org/pep-0554/).
+### interp1
 
-### Method one
+As experimental `multiprocessing` pool using subinterpreters.
 
-As with regular `multiprocessing` using subprocesses, each worker in the pool has its own thread in the main interpreter.
-Inside each of those threads, a subinterpreter runs multiprocessing's existing "work handler loop", unmodified.
+As with regular `multiprocessing` using subprocesses, each worker in the pool
+has its own thread in the main interpreter. Inside each of those threads, a
+subinterpreter runs multiprocessing's existing "work handler loop", unmodified.
 
 Since a `queue.SimpleQueue` can not be used to send objects between
 subinterpreters, work is sent to this loop inside the subinterpreter using a
@@ -47,7 +80,7 @@ forth, but the pickle data itself does not need to be copied.
 
 Since the worker loop needs to block waiting for more tasks and the result
 handler needs to block waiting for more results, an `os.pipe` is used to
-communicate between interpreters when new data is ready to be read from the
+ommunicate between interpreters when new data is ready to be read from the
 `LockableBoard`.
 
 Experimentally, this was much faster than polling in a Python loop, but I don't
@@ -57,7 +90,7 @@ purpose (it was definitely handy).
 (extrainterpreters also contains a Queue class that is more like what is needed,
 but it doesn't appear to support blocking reads yet.)
 
-### Method two
+### interp2
 
 As above, each worker in the pool starts a new thread in the main interpreter.
 Each of these threads has exactly one subinterpreter contained in it, but rather
@@ -93,31 +126,56 @@ And the following code runs each task, where `pickle` is a `(func, args, kwargs)
 _f({pickle!r})
 ```
 
-### Method three
+### thread
 
-This method is identical to method two, except the return value from the
-subinterpreter is sent over a pipe back to the worker thread in the main
-interpreter. This does not require the extension to PEP554 to run code in eval
-mode.
+Uses `multiprocessing.ThreadPool`.  Here, one would expect GIL contention to produce a time similar to the `sequential` mode.
 
-### A note about nogil
+### futures
+
+Uses `concurrent.futures.ThreadPoolExecutor`.  Should have similar performance to `thread`, but included for completeness, especially since this is the framework used for `nogil` benchmarking.
+
+### nogil-sequential
+
+Does the work sequentially, using `map`, on the `nogil` branch of CPython.
+
+### nogil-thread
+
+Uses `multiprocessing.ThreadPool` on the `nogil` branch of CPython.
+
+### nogil-futures
+
+Uses `concurrent.futures.ThreadPoolExecutor` on the `nogil` branch of CPython.
+
+## A note about nogil
 
 The `nogil` mode runs on the `colesbury/nogil-3.12` fork of CPython (hash 4526c07).
 That commit segfaults when running the nbody benchmark, so I disabled specialization to get it to run.
-To account for this variable, I also disabled specialization on upstream CPython.
+To account for this variable, I also disabled specialization on the upstream CPython used for the non-nogil benchmarks.
+
+## Interpreting the results
+
+The `nogil` results are interesting.  For the `fib` benchmark, which is the same [benchmark in nogil's README](https://github.com/colesbury/nogil#example), there is a clear speed advantage over all other approaches.  `nbody`, however, hits a pathological case, as it mutates a dictionary shared across threads, and therefore underperforms `sequential`, as well as threading-with-GIL. (Also of note is that the results are incorrect because of this, but the goal here is not to prevent all bugs.)  I made a modified version of the benchmark, `nbody_no_share` that `deepcopy`s the data and the beginning of each task and uses that copy for computation. The results are much improved in this case, and `nogil-thread` out performs `nogil-sequential`, but is still far behind subprocesses and subinterpreters.
+
+![Results](nbody_no_share.png)
+
+The `raytrace` benchmark hits a similar pathological case with `nogil`.  It does have some effectively immutable constants in global state.
+
+For the `data_pass` benchmark, you can see the advantage over approaches that are forced to pickle/serialize (subintpreters and subprocesses) and those that don't.
 
 ## Running this
 
 This requires:
 
-  - A [branch of CPython that adds a SubinterpreterPool](https://github.com/mdboom/cpython/tree/subinterpreter-pool-memoryboard)
+  - A [branch of CPython that adds a SubinterpreterPool and disables specialization](https://github.com/mdboom/cpython/tree/subinterpreter-pool-memoryboard)
   - A [branch of extrainterpreters that bypasses a safety check](https://github.com/jsbueno/extrainterpreters/compare/main...mdboom:extrainterpreters:main)
+  - A [branch of CPython-nogil that disables specialization](https://github.com/mdboom/cpython/tree/disable-specialization)
   - GNU time installed and on the path
 
 To reproduce these results:
 
-- Checkout the `subinterpreter-pool-memoryboard` branch of CPython from my fork into a directory sitting alongside this one, and build it.
-- Use `run.sh $1` to install the dependencies in a venv and run one specific mode:
+- Checkout the `subinterpreter-pool-memoryboard` branch of CPython from my fork into a directory called `cpython` sitting alongside this one, and build it.
+- Checkout the `disable-specialization` branch of CPython from my fork into a directory called `cpython-nogil` sitting alongside this one, and build it.
+- Use `run.sh $mode $benchmark` to install the dependencies in a venv and run one specific mode:
 
   - `interp`: SubinterpreterPool using a memoryboard for communication
   - `interp2`: SubinterpreterPool using `queue.SimpleQueue` for communication
@@ -125,5 +183,12 @@ To reproduce these results:
   - `subprocess`: Use the default subprocess-based `multiprocessing.Pool`
   - `sequential`: Don't use multiprocessing at all, just run the same work sequentially
 
-- Use `get_data.py` to collect results from all modes.
-- Use `plot.py` to plot the data from `data.json`.
+  From one of the given benchmarks:
+  
+  - `nbody`
+  - `nbody_no_share`
+  - `data_pass`
+  - `raytrace`
+
+- Use `get_data.py` to collect results from all modes, including nogil.
+- Use `plot.py` to plot the data from a given benchmark.

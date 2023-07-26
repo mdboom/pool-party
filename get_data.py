@@ -35,16 +35,26 @@ args = parser.parse_args()
 benchmark = args.benchmark
 
 
-for mode in ["interp", "interp2", "interp3", "thread", "nogil", "sequential", "subprocess"]:
+for mode in [
+    "sequential",
+    "interp",
+    "interp2",
+    "thread",
+    "futures",
+    "nogil-sequential",
+    "nogil-thread",
+    "nogil-futures",
+    "subprocess",
+]:
     print(f"{mode=}")
 
     if benchmark in ("data_pass", "balance") and mode == "interp3":
         print(f"Skipping: {benchmark} doesn't work with interp3")
         continue
 
-    if mode == "nogil":
+    if mode.startswith("nogil-"):
         python_exec = nogil_py
-        real_mode = "thread"
+        real_mode = mode[6:]
     else:
         python_exec = py
         real_mode = mode
@@ -87,4 +97,4 @@ for mode in ["interp", "interp2", "interp3", "thread", "nogil", "sequential", "s
 
         data[mode][key.decode("utf-8")] = val
 
-json.dump(data, open(f"{benchmark}.json", "w"))
+json.dump(data, open(f"{benchmark}.json", "w"), indent=2)

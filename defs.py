@@ -107,6 +107,21 @@ def offset_momentum(ref, bodies=SYSTEM, px=0.0, py=0.0, pz=0.0):
 
 
 def bench_nbody(loops, reference=DEFAULT_REFERENCE, iterations=DEFAULT_ITERATIONS):
+    # Set up global state
+    offset_momentum(BODIES[reference])
+
+    range_it = range(loops)
+
+    result = []
+
+    for x in range_it:
+        advance(0.01, iterations)
+        result.append(report_energy())
+
+    return result
+
+
+def bench_nbody_no_share(loops, reference=DEFAULT_REFERENCE, iterations=DEFAULT_ITERATIONS):
     bodies = copy.deepcopy(BODIES)
     system = copy.deepcopy(SYSTEM)
     pairs = copy.deepcopy(PAIRS)
@@ -158,3 +173,18 @@ def get_balance_data():
 def assert_balance_results(result):
     assert len(result) == 64
     assert all(len(x) == (1 << 16) for x in result)
+
+
+def bench_fib(n):
+    if n < 2:
+        return 1
+    return bench_fib(n - 1) + bench_fib(n - 2)
+
+
+def get_fib_data():
+    return [34] * 64
+
+
+def assert_fib_results(result):
+    assert len(result) == 64
+    assert all(x == 9227465 for x in result)
