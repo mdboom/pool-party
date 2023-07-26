@@ -154,7 +154,7 @@ To account for this variable, I also disabled specialization on the upstream CPy
 
 ## Interpreting the results
 
-The `nogil` results are interesting.  For the `fib` benchmark, which is the same [benchmark in nogil's README](https://github.com/colesbury/nogil#example), there is a clear speed advantage over all other approaches.  `nbody`, however, hits a pathological case, as it mutates a dictionary shared across threads, and therefore underperforms `sequential`, as well as threading-with-GIL. (Also of note is that the results are incorrect because of this, but the goal here is not to prevent all bugs.)  I made a modified version of the benchmark, `nbody_no_share` that `deepcopy`s the data and the beginning of each task and uses that copy for computation. The results are much improved in this case, and `nogil-thread` out performs `nogil-sequential`, but is still far behind subprocesses and subinterpreters.
+The `nogil` results are interesting.  For the `fib` benchmark, which is the same [benchmark in nogil's README](https://github.com/colesbury/nogil#example), there is a clear speed advantage over all other approaches.  `nbody`, however, hits a pathological case, as it mutates a dictionary shared across threads, and therefore underperforms `sequential`, as well as threading-with-GIL. (Also of note is that the results are incorrect because of this, but the goal here is not to prevent all bugs.)  I made a modified version of the benchmark, `nbody_no_share` that `deepcopy`s the data at the beginning of each task and uses that copy for computation. The results are much improved in this case, and `nogil-thread` out performs `nogil-sequential`, but is still far behind subprocesses and subinterpreters.
 
 ![Results](nbody_no_share.png)
 

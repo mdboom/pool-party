@@ -106,7 +106,7 @@ def offset_momentum(ref, bodies=SYSTEM, px=0.0, py=0.0, pz=0.0):
     v[2] = pz / m
 
 
-def bench_nbody(loops, reference=DEFAULT_REFERENCE, iterations=DEFAULT_ITERATIONS):
+def bench(loops, reference=DEFAULT_REFERENCE, iterations=DEFAULT_ITERATIONS):
     # Set up global state
     offset_momentum(BODIES[reference])
 
@@ -121,70 +121,10 @@ def bench_nbody(loops, reference=DEFAULT_REFERENCE, iterations=DEFAULT_ITERATION
     return result
 
 
-def bench_nbody_no_share(loops, reference=DEFAULT_REFERENCE, iterations=DEFAULT_ITERATIONS):
-    bodies = copy.deepcopy(BODIES)
-    system = copy.deepcopy(SYSTEM)
-    pairs = copy.deepcopy(PAIRS)
-
-    # Set up global state
-    offset_momentum(bodies[reference], system)
-
-    range_it = range(loops)
-
-    result = []
-
-    for x in range_it:
-        advance(0.01, iterations, system, pairs)
-        result.append(report_energy(system, pairs))
-
-    return result
-
-
-def get_nbody_data():
+def get_data():
     return [10] * 64
 
 
-def assert_nbody_results(result):
+def assert_result(result):
     assert len(result) == 64
     assert all(len(x) == 10 for x in result)
-
-
-def bench_data_pass(indata):
-    return [1000.0] * (1 << 16)
-
-
-def get_data_pass_data():
-    return [1000.0] * (1 << 10)
-
-
-def assert_data_pass_results(result):
-    assert len(result) == (1 << 10)
-    assert all(len(x) == (1 << 16) for x in result)
-
-
-def bench_balance(loops):
-    return bench_nbody(loops) * (1 << 16)
-
-
-def get_balance_data():
-    return [1] * 64
-
-
-def assert_balance_results(result):
-    assert len(result) == 64
-    assert all(len(x) == (1 << 16) for x in result)
-
-
-def bench_fib(n):
-    if n < 2:
-        return 1
-    return bench_fib(n - 1) + bench_fib(n - 2)
-
-
-def get_fib_data():
-    return [34] * 64
-
-
-def assert_fib_results(result):
-    assert len(result) == 64
-    assert all(x == 9227465 for x in result)

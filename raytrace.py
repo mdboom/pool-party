@@ -341,7 +341,7 @@ class CheckerboardSurface(SimpleSurface):
             return self.baseColour
 
 
-def bench_raytrace(args):
+def bench(args):
     loops, width, height = args
     range_it = range(loops)
 
@@ -363,9 +363,9 @@ def bench_raytrace(args):
     return [0]
 
 
-def get_raytrace_data():
+def get_data():
     return [(1, 100, 100)] * 64
 
 
-def assert_raytrace_results(result):
+def assert_result(result):
     assert result == [[0]] * 64

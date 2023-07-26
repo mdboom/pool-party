@@ -1,3 +1,7 @@
+import argparse
+import concurrent.futures
+from importlib.machinery import SourceFileLoader
+from pathlib import Path
 import sys
 
 try:
@@ -11,8 +15,6 @@ except ImportError:
 from multiprocessing.pool import ThreadPool
 from multiprocessing import Pool
 
-import concurrent.futures
-
 gilknocker = None
 try:
     if "nogil" not in sys.version:
@@ -20,29 +22,8 @@ try:
 except ImportError:
     pass
 
-import argparse
-import sys
 
-import defs
-import raytrace
-
-
-BENCHMARKS = {
-    "nbody": (defs.bench_nbody, defs.get_nbody_data, defs.assert_nbody_results),
-    "nbody_no_share": (defs.bench_nbody_no_share, defs.get_nbody_data, defs.assert_nbody_results),
-    "data_pass": (
-        defs.bench_data_pass,
-        defs.get_data_pass_data,
-        defs.assert_data_pass_results,
-    ),
-    "balance": (defs.bench_balance, defs.get_balance_data, defs.assert_balance_results),
-    "raytrace": (
-        raytrace.bench_raytrace,
-        raytrace.get_raytrace_data,
-        raytrace.assert_raytrace_results,
-    ),
-    "fib": (defs.bench_fib, defs.get_fib_data, defs.assert_fib_results),
-}
+BENCHMARKS = ["nbody", "nbody_no_share", "data_pass", "raytrace", "fib"]
 
 
 def get_multiprocessing_runner(pool_type):
@@ -82,9 +63,7 @@ if __name__ == "__main__":
         choices=["interp", "interp2", "thread", "subprocess", "sequential", "futures"],
         help="Type of pool to use",
     )
-    parser.add_argument(
-        "benchmark", choices=list(BENCHMARKS.keys()), help="The benchmark to run"
-    )
+    parser.add_argument("benchmark", choices=BENCHMARKS, help="The benchmark to run")
     parser.add_argument(
         "--workers",
         type=int,
@@ -93,6 +72,15 @@ if __name__ == "__main__":
         default=16,
     )
     args = parser.parse_args()
+
+    module = SourceFileLoader(
+        args.benchmark, str(Path(__file__).parent / f"{args.benchmark}.py")
+    ).load_module()
+    bench_func, bench_data, bench_assert = (
+        module.bench,
+        module.get_data,
+        module.assert_result,
+    )
 
     single = False
     match args.mode:
@@ -108,8 +96,6 @@ if __name__ == "__main__":
             runner = get_sequential_runner()
         case "futures":
             runner = get_threadpool_executor_runner()
-
-    bench_func, bench_data, bench_assert = BENCHMARKS[args.benchmark]
 
     if gilknocker is not None:
         knocker = gilknocker.KnockKnock(1_000)
