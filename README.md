@@ -150,6 +150,10 @@ Uses `multiprocessing.ThreadPool` on the `nogil` branch of CPython.
 
 Uses `concurrent.futures.ThreadPoolExecutor` on the `nogil` branch of CPython.
 
+### subprocess
+
+Uses `multiprocess.Pool` using subprocesses.
+
 ## A note about nogil
 
 The `nogil` mode runs on the `colesbury/nogil-3.12/nogil-3.12-bugfix` fork of CPython (hash ef5bac94).
