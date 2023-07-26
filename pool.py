@@ -83,19 +83,18 @@ if __name__ == "__main__":
     )
 
     single = False
-    match args.mode:
-        case "interp":
-            runner = get_multiprocessing_runner(SubinterpreterPool)
-        case "interp2":
-            runner = get_multiprocessing_runner(SubinterpreterPool2)
-        case "thread":
-            runner = get_multiprocessing_runner(ThreadPool)
-        case "subprocess":
-            runner = get_multiprocessing_runner(Pool)
-        case "sequential":
-            runner = get_sequential_runner()
-        case "futures":
-            runner = get_threadpool_executor_runner()
+    if args.mode == "interp":
+        runner = get_multiprocessing_runner(SubinterpreterPool)
+    elif args.mode == "interp2":
+        runner = get_multiprocessing_runner(SubinterpreterPool2)
+    elif args.mode == "thread":
+        runner = get_multiprocessing_runner(ThreadPool)
+    elif args.mode == "subprocess":
+        runner = get_multiprocessing_runner(Pool)
+    elif args.mode == "sequential":
+        runner = get_sequential_runner()
+    elif args.mode == "futures":
+        runner = get_threadpool_executor_runner()
 
     if gilknocker is not None:
         knocker = gilknocker.KnockKnock(1_000)

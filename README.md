@@ -207,6 +207,9 @@ That 10% number doesn't reflect the overall time penalty, but it is a strong sig
 
 ![Results](fib2.png)
 
+I do not know whether this is just an isolated bug in `nogil` or something that is more fundamental.
+I did try running this on the older fork of `nogil` based on Python 3.9, and it does *not* seem to suffer from this pathological behavior, so perhaps that is a good sign this can be fixed easily.
+
 For the `data_pass` benchmark, you can see the advantage over approaches that are forced to pickle/serialize (subintpreters and subprocesses) and those that don't.
 
 ## Running this
