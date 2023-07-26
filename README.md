@@ -7,27 +7,31 @@ approaches, including `multiprocessing.ThreadPool`, `multiprocessing.Pool`,
 
 ## Benchmarks
 
+All of these benchmarks compute the same thing X number of times, either
+sequentially or in a pool of 16 workers on a 8 core / 16 virtual core machine.
+
 ### fib
 
-Calculates fibonacci.  Taken directly from the [nogil README](https://github.com/colesbury/nogil#example).
+Calculates fibonacci(28) 64 times.  Taken directly from the [nogil README](https://github.com/colesbury/nogil#example).
 
 ![Results](fib.png)
 
 ### nbody
 
-The `nbody` benchmark from pyperformance.
+The `nbody` benchmark from pyperformance, doing 10 iterations each time, 64 times.
 
 ![Results](nbody.png)
 
 ### raytrace
 
-The `raytrace` benchmark from pyperformance.
+The `raytrace` benchmark from pyperformance.  Renders a 100x100 image, 64 times.
 
 ![Results](raytrace.png)
 
 ### data_pass
 
-A do-nothing benchmark that passes 0.5 MB of data to measure the overhead of message passing.
+A do-nothing benchmark that passes 0.5 MB of data 64,000 times to measure the
+overhead of message passing.
 
 ![Results](data_pass.png)
 
@@ -192,8 +196,10 @@ def bench(n):
     return f.calculate(n)
 ```
 
-You see in this `fib2` results that nogil with threads gets really stuck by updating a member on an instance.
-This instance, importantly, is not shared between threads.
+You see in this `fib2` results that nogil with threads gets really stuck by updating a member on an instance -- an instance that, importantly, is not shared between threads.  It takes 10x longer than calculating it sequentially (80s vs. 8s), and uses 40x as much CPU time doing it.
+
+Linux perf somewhat backs up this finding. It measures 10% of time in `_PyObject_GetInstanceAttribute` when multithreading, and 0% (below threshold of measurement) when running sequentially.
+That 10% number doesn't reflect the overall time penalty, but it is a strong signal.
 
 ![Results](fib2.png)
 
@@ -221,7 +227,7 @@ To reproduce these results:
   - `sequential`: Don't use multiprocessing at all, just run the same work sequentially
 
   From one of the given benchmarks:
-  
+
   - `nbody`
   - `nbody_no_share`
   - `data_pass`
