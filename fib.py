@@ -5,9 +5,9 @@ def bench(n):
 
 
 def get_data():
-    return [34] * 64
+    return [28] * 64
 
 
 def assert_result(result):
     assert len(result) == 64
-    assert all(x == 9227465 for x in result)
+    assert all(x == 514229 for x in result)

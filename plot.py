@@ -13,7 +13,7 @@ fig, axs = plt.subplots(2, 2, layout="constrained")
 def rotate_data(data, metric, f):
     output = {}
     for mode, dataset in data.items():
-        output[mode] = f(dataset[metric])
+        output[mode] = f(dataset.get(metric, 0))
     return output
 
 

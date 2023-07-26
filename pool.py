@@ -17,13 +17,13 @@ from multiprocessing import Pool
 
 gilknocker = None
 try:
-    if "nogil" not in sys.version:
+    if not getattr(sys.flags, "nogil", False):
         import gilknocker
 except ImportError:
     pass
 
 
-BENCHMARKS = ["nbody", "nbody_no_share", "data_pass", "raytrace", "fib"]
+BENCHMARKS = ["nbody", "nbody_no_share", "data_pass", "raytrace", "fib", "fib2"]
 
 
 def get_multiprocessing_runner(pool_type):

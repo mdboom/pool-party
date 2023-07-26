@@ -148,7 +148,7 @@ Uses `concurrent.futures.ThreadPoolExecutor` on the `nogil` branch of CPython.
 
 ## A note about nogil
 
-The `nogil` mode runs on the `colesbury/nogil-3.12` fork of CPython (hash 4526c07).
+The `nogil` mode runs on the `colesbury/nogil-3.12/nogil-3.12-bugfix` fork of CPython (hash ef5bac94).
 That commit segfaults when running the nbody benchmark, so I disabled specialization to get it to run.
 To account for this variable, I also disabled specialization on the upstream CPython used for the non-nogil benchmarks.
 
@@ -159,6 +159,43 @@ The `nogil` results are interesting.  For the `fib` benchmark, which is the same
 ![Results](nbody_no_share.png)
 
 The `raytrace` benchmark hits a similar pathological case with `nogil`.  It does have some effectively immutable constants in global state.
+
+One possible answer as to the cause is in the `fib2` benchmark.  It is a modification of the nogil's `fib` benchmark to use an instance that updates the data member on each call.
+
+The original `fib` benchmark:
+
+```python
+def bench(n):
+    if n < 2:
+        return 1
+    return bench(n - 1) + bench(n - 2)
+```
+
+The `fib2` benchmark:
+
+```python
+class Fibonacci:
+    def __init__(self, x):
+        self.x = x
+
+    def calculate(self, n):
+        # This line doesn't actually matter for the calculation, but this is what
+        # causes the nogil threaded performance to drop precipitously.
+        self.x += 1
+
+        if n < 2:
+            return 1
+        return self.calculate(n - 1) + self.calculate(n - 2)
+
+def bench(n):
+    f = Fibonacci(1)
+    return f.calculate(n)
+```
+
+You see in this `fib2` results that nogil with threads gets really stuck by updating a member on an instance.
+This instance, importantly, is not shared between threads.
+
+![Results](fib2.png)
 
 For the `data_pass` benchmark, you can see the advantage over approaches that are forced to pickle/serialize (subintpreters and subprocesses) and those that don't.
 
